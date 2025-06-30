@@ -1,0 +1,139 @@
+{% extends 'ToDoApp/base.html' %}
+{% block content %}
+
+<div class="d-flex">
+  <!-- Sidebar -->
+  <div class="bg-light border-end p-3" style="width: 250px; height: 90vh;">
+    <h5 class="mb-4"><strong>To Do</strong></h5>
+    
+    <ul class="nav flex-column">
+      <li class="nav-item"><a class="nav-link text-primary" href="{% url 'task_create' %}">➕ New Task</a></li>
+      <li class="nav-item">
+      <a class="nav-link" href="{% url 'task_list' %}">
+      🌞 My Day <span class="badge bg-info">{{ my_day_count }}</span>
+      </a>
+      </li>
+      <li class="nav-item">
+      <a class="nav-link" href="{% url 'task_all' %}">
+      📋 Tasks <span class="badge bg-info">{{ tasks_count }}</span>
+      </a>
+      </li>
+      <li class="nav-item">
+      <a class="nav-link" href="{% url 'task_list' %}?filter=important">
+      ⭐ Important <span class="badge bg-info">{{ important_count }}</span>
+      </a>
+      </li>
+    </ul>
+  </div>
+  <!-- Main Content -->
+  <div class="flex-grow-1 p-4">
+    <h4><strong>🌞 My Day</strong></h4>
+    <p>{{ today|date:"l, F j" }}</p>
+    <form method="post" action="{% url 'task_create' %}" class="d-flex mb-4">
+  {% csrf_token %}
+  <input type="text" name="title" class="form-control me-2" placeholder="Add a task" required>
+  <input type="text" name="description" class="form-control me-2" placeholder="Description (optional)">
+  <button class="btn btn-primary" type="submit">Add</button>
+</form>
+<ul class="list-group">
+  {% if tasks %}
+  {% for task in tasks %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    <form method="POST" action="{% url 'mark_completed' task.id %}" class="d-flex align-items-center w-100 me-2">
+      {% csrf_token %}
+      <input type="checkbox" onchange="this.form.submit()" class="form-check-input me-3">
+      <div class="me-auto">
+        <strong>{{ task.title }}</strong><br>
+        <small>{{ task.description }}</small><br>
+        <small class="text-muted">
+          Created: {{ task.created_at|date:"M d, Y" }}
+          {% if task.due_date %}| Due: {{ task.due_date|date:"M d, Y" }}{% endif %}
+        </small>
+      </div>
+    </form>
+     
+<div class="d-flex align-items-center gap-2">
+      <label for="due_date_{{ task.id }}" class="form-label small mb-1">Due Date</label> 
+  <form method="POST" action="{% url 'update_due_date' task.id %}">
+    {% csrf_token %}
+    <input
+      type="date"
+      name="due_date"
+      title="Select due date"
+      value="{{ task.due_date|date:'Y-m-d' }}"
+      class="form-control form-control-sm due-date-input"
+      data-task-id="{{ task.id }}"
+      style="width: 140px;"
+    >
+  </form>
+  <!-- Edit/Delete buttons -->
+  <a href="{% url 'task_update' task.id %}" class="btn btn-sm btn-outline-warning">Edit</a>
+  <a href="{% url 'task_delete' task.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+   <a href="{% url 'toggle_important' task.id %}" style="text-decoration:none; color:inherit; font-size: 24px;">
+  {% if task.is_important %}
+    ★
+  {% else %}
+    ☆
+  {% endif %}
+  </a>    
+</div>
+  </li>
+  {% empty %}
+  <li class="list-group-item text-muted">No tasks yet. Add one!</li>
+  {% endfor %}
+  {% else %}
+  <p class="text-muted">No active tasks found{% if query %} for "{{ query }}"{% endif %}.</p>
+  {% endif %}
+</ul>
+<h4 class="mt-4 d-flex align-items-center" style="cursor: pointer;" data-bs-toggle="collapse" data-bs-target="#completedTasks" aria-expanded="false" aria-controls="completedTasks" id="completedHeader">
+  <span id="completedArrow" style="display: inline-block; transition: transform 0.3s ease; font-size: 1rem; margin-right: 0.5rem;">▶</span>
+  Completed Tasks
+</h4>
+<div class="collapse" id="completedTasks">
+  <ul class="list-group">
+    {% for task in completed_tasks %}
+    <li class="list-group-item d-flex justify-content-between align-items-center">
+      <div class="strike">
+        <strong><del>{{ task.title }}</del></strong><br>
+        <small><del>{{ task.description }}</del></small>
+      </div>
+      {% if task.completed_at %}
+        <small class="text-muted">✔️Completed on: {{ task.completed_at|date:"M d, Y h:i A" }}</small>
+      {% endif %}
+
+      <div>
+      </div>
+    </li>
+    {% empty %}
+    <li class="list-group-item text-muted">No completed tasks yet.</li>
+    {% endfor %}
+  </ul>
+</div>
+<script>
+  document.querySelectorAll('.due-date-input').forEach(input => {
+    input.addEventListener('change', function () {
+      this.form.submit();  // Auto-submit the form on calendar change
+    });
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const header = document.getElementById('completedHeader');
+    const arrow = document.getElementById('completedArrow');
+    const collapseEl = document.getElementById('completedTasks');
+    const bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+
+    header.addEventListener('click', () => {
+      bsCollapse.toggle();
+    });
+
+    collapseEl.addEventListener('show.bs.collapse', () => {
+      arrow.style.transform = 'rotate(90deg)';
+    });
+
+    collapseEl.addEventListener('hide.bs.collapse', () => {
+      arrow.style.transform = 'rotate(0deg)';
+    });
+  });
+</script>
+{% endblock %}
