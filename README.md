@@ -27,5 +27,29 @@ A feature-rich To-Do List web application built with **Python** and **Django** a
 
 ## 📷 Screenshots
 
+### 🏠 Login Page
+![Login](screenshot1.png)
+
+### 🏠 Task List Page
+![Task List](screenshot2.png)
+
+### 📅 My Day View
+![My Day](screenshot3.png)
+
+### ⭐ Important Task Highlighted
+![Important Task](screenshot4.png)
+
+###  Completed Task View
+![Completed](screenshot5.png)
+
+### 📅 Add/Edit View
+![Add/Edit](screenshot6.png)
+
+###  All Task View
+![All Task](screenshot7.png)
+
+
+
+
 
 
